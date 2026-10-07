@@ -1,26 +1,468 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* Swiper's styles go in the components layer so Tailwind utilities (slide widths, padding) can override them. */
+@import "swiper/css" layer(components);
+@import "swiper/css/pagination" layer(components);
+*{
+  scrollbar-width: none;
 }
+/* =========================================================================
+   DESIGN TOKENS
+   Same system as the previous storefront kit: one brand colour on a neutral
+   ink scale, 1px hairlines, 8 / 12 / 14px radii, layered soft shadows and a
+   2px focus outline. Type is Space Grotesk only. No translucent "glass".
+   ========================================================================= */
+@theme {
+  --font-sans: var(--font-grotesk), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+  --font-display: var(--font-grotesk), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+  /* Brand — rani pink */
+  --color-brand-50: #fff1f6;
+  --color-brand-100: #ffe3ee;
+  --color-brand-200: #ffc8dd;
+  --color-brand-300: #ff9dc1;
+  --color-brand-400: #fb6f9f;
+  --color-brand-500: #ef3f80;
+  --color-brand-600: #d81b66;
+  --color-brand-700: #b8115a;
+  --color-brand-800: #960f4c;
+  --color-brand-900: #6d0d3a;
+  --color-brand-950: #430522;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Ink / neutral scale */
+  --color-ink-50: #f6f6f6;
+  --color-ink-100: #ededed;
+  --color-ink-200: #e0e0e0;
+  --color-ink-300: #c7c7c7;
+  --color-ink-400: #9e9e9e;
+  --color-ink-500: #6f6f6f;
+  --color-ink-600: #5c5c5c;
+  --color-ink-700: #3d3d3d;
+  --color-ink-800: #1a1a1a;
+  --color-ink-900: #0b0b0c;
+
+  /* Short aliases used throughout the components */
+  --color-ink: #0b0b0c;
+  --color-muted: #6f6f6f;
+  --color-line: #e0e0e0;
+  --color-paper: #f6f6f6;
+
+  /* Support */
+  --color-success-50: #e9f8ef;
+  --color-success-500: #17a34a;
+  --color-success-700: #0f7134;
+  --color-star: #ffb800;
+
+  /* Radius — small / medium / large */
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 14px;
+
+  /* Elevation — small / medium / large */
+  --shadow-small: 0 0 5px 0 rgb(1 1 1 / 0.02), 0 2px 10px 0 rgb(1 1 1 / 0.06), 0 0 1px 0 rgb(1 1 1 / 0.2);
+  --shadow-medium: 0 0 15px 0 rgb(1 1 1 / 0.03), 0 2px 30px 0 rgb(1 1 1 / 0.08), 0 0 1px 0 rgb(1 1 1 / 0.2);
+  --shadow-large: 0 0 30px 0 rgb(1 1 1 / 0.04), 0 30px 60px 0 rgb(1 1 1 / 0.12), 0 0 1px 0 rgb(1 1 1 / 0.2);
+
+  /* Motion — iOS-like: quick to respond, long gentle settle */
+  --ease-fluid: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.45, 0.64, 1);
+
+  --animate-star-movement-bottom: star-movement-bottom linear infinite alternate;
+  --animate-star-movement-top: star-movement-top linear infinite alternate;
+  --animate-shine: shine 5s linear infinite;
+  --animate-gradient: gradient 8s linear infinite;
+  --animate-pop: pop-in 0.36s var(--ease-fluid) both;
+  --animate-search-grow: search-grow 0.5s var(--ease-fluid) both;
+  --animate-search-shrink: search-shrink 0.22s ease-in both;
+  --animate-sheet-in: sheet-in 0.38s var(--ease-fluid) both;
+
+  @keyframes star-movement-bottom {
+    0% { transform: translate(0%, 0%); opacity: 1; }
+    100% { transform: translate(-100%, 0%); opacity: 0; }
+  }
+  @keyframes star-movement-top {
+    0% { transform: translate(0%, 0%); opacity: 1; }
+    100% { transform: translate(100%, 0%); opacity: 0; }
+  }
+  @keyframes shine {
+    0% { background-position: 150% center; }
+    100% { background-position: -50% center; }
+  }
+  @keyframes gradient {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+  /* Navbar search: the field unfolds from the icon towards the logo, and folds back */
+  @keyframes search-grow {
+    from { max-width: 2.75rem; opacity: 0.2; }
+    to { max-width: 100%; opacity: 1; }
+  }
+  @keyframes search-shrink {
+    from { max-width: 100%; opacity: 1; }
+    to { max-width: 2.75rem; opacity: 0; }
+  }
+  @keyframes sheet-in {
+    from { opacity: 0; transform: translateY(-8px) scale(0.985); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes shimmer {
+    100% { transform: translateX(100%); }
+  }
+  @keyframes pop-in {
+    0% { transform: scale(0.6); }
+    60% { transform: scale(1.12); }
+    100% { transform: scale(1); }
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* =========================================================================
+   BASE
+   ========================================================================= */
+@layer base {
+  * {
+    border-color: var(--color-line);
+  }
+
+  html {
+    scrollbar-gutter: stable;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    /* "clip" (unlike "hidden") does not create a scroll container, so sticky headers keep working. */
+    overflow-x: clip;
+    background: #ffffff;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
+    /* Tabular figures wherever prices appear, so digits never jitter */
+    font-feature-settings: 'tnum' 1;
+  }
+
+  h1, h2, h3, h4 {
+    letter-spacing: -0.03em;
+    font-weight: 700;
+  }
+
+  h1, h2 {
+    text-wrap: balance;
+  }
+
+  /* No grey tap flash on phones: feedback comes from motion instead */
+  a, button {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  ::selection {
+    background: var(--color-brand-100);
+    color: var(--color-brand-900);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-brand-600);
+    outline-offset: 2px;
+    border-radius: var(--radius-small);
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+}
+
+/* =========================================================================
+   UTILITIES
+   ========================================================================= */
+/* Page gutter */
+@utility wrap {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1240px;
+  padding-inline: 1rem;
+
+  @media (width >= 48rem) {
+    padding-inline: 1.5rem;
+  }
+  @media (width >= 80rem) {
+    padding-inline: 2rem;
+  }
+}
+
+/* Skip layout and paint for sections that are off screen; they render as they approach the viewport. */
+@utility defer-render {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
+
+/* Sections that always start below the fold are not rendered at all until the browser has
+   painted the first frame (layout.js sets data-painted on <html> right after first paint).
+   Their images therefore never compete with the hero image for bandwidth or CPU.
+   Use together with `defer-render`, which reserves their space. */
+html:not([data-painted]) .after-paint {
+  content-visibility: hidden;
+}
+@media (width < 40rem) {
+  html:not([data-painted]) .after-paint-phone {
+    content-visibility: hidden;
+  }
+}
+
+/* Standard surface: hairline + large radius */
+@utility card {
+  border-radius: var(--radius-large);
+  border: 1px solid var(--color-line);
+  background-color: #ffffff;
+}
+
+@utility eyebrow {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-brand-700);
+}
+
+/* Premium dark surface: near-black with a faint dot grid and a soft brand glow in one corner.
+   Drawn with gradients only (no blur filters, no translucency), so it costs nothing to paint. */
+@utility surface-dark {
+  background-color: var(--color-ink-900);
+  background-image:
+    radial-gradient(rgb(255 255 255 / 0.07) 1px, transparent 1px),
+    radial-gradient(34rem 26rem at 0% 0%, rgb(216 27 102 / 0.34), transparent 70%),
+    radial-gradient(28rem 22rem at 100% 100%, rgb(216 27 102 / 0.14), transparent 70%);
+  background-size: 16px 16px, 100% 100%, 100% 100%;
+  color: #ffffff;
+}
+
+/* The same idea on the brand colour */
+@utility surface-brand {
+  background-color: var(--color-brand-600);
+  background-image:
+    radial-gradient(rgb(255 255 255 / 0.13) 1px, transparent 1px),
+    radial-gradient(30rem 22rem at 100% 0%, rgb(255 255 255 / 0.16), transparent 70%);
+  background-size: 16px 16px, 100% 100%;
+  color: #ffffff;
+}
+
+/* Soft dot pattern for banner backdrops */
+@utility dot-grid {
+  background-image: radial-gradient(currentColor 1px, transparent 1px);
+  background-size: 16px 16px;
+}
+
+/* Raise on hover, like a card being picked up */
+@utility lift {
+  transition: transform 0.5s var(--ease-fluid), box-shadow 0.3s ease;
+  @media (hover: hover) {
+    &:hover {
+      transform: translateY(-3px);
+      box-shadow: var(--shadow-medium);
+    }
+  }
+}
+
+/* Loading skeleton shimmer */
+@utility skeleton {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--color-ink-100);
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    transform: translateX(-100%);
+    background-image: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.7), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+}
+
+/* Spring press feedback for anything tappable */
+@utility press {
+  transition: transform 0.35s var(--ease-spring), background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+@layer components {
+  /* Buttons: pill shaped, spring press, gentle hover growth */
+  .btn {
+    @apply inline-flex h-11 items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold tracking-[-0.01em] whitespace-nowrap disabled:pointer-events-none disabled:opacity-50;
+    transition: transform 0.35s var(--ease-spring), background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  @media (hover: hover) {
+    .btn:hover {
+      transform: scale(1.02);
+    }
+  }
+  .btn:active {
+    transform: scale(0.96);
+  }
+  .btn-sm {
+    @apply h-9 gap-1.5 px-4 text-[13px];
+  }
+  .btn-lg {
+    @apply h-13 px-7 text-[15px];
+  }
+  .btn-primary {
+    @apply bg-brand-600 text-white shadow-small hover:bg-brand-700;
+  }
+  .btn-dark {
+    @apply bg-ink-900 text-white hover:bg-ink-800;
+  }
+  .btn-outline {
+    @apply border border-ink-200 bg-white text-ink-800 hover:border-ink-300 hover:bg-ink-50;
+  }
+  .btn-subtle {
+    @apply bg-ink-50 text-ink-800 hover:bg-ink-100;
+  }
+  .btn-white {
+    @apply bg-white text-ink-900 shadow-medium;
+  }
+
+  .field {
+    @apply h-12 w-full rounded-medium border border-ink-200 bg-white px-4 text-[15px] text-ink placeholder:text-ink-400 focus:border-brand-500 focus:ring-2 focus:ring-brand-100 focus:outline-none;
+  }
+  textarea.field {
+    @apply h-auto py-3;
+  }
+
+  /* Icon badges: a tinted disc with a ring and a soft shadow, so icons never sit flat on the page */
+  .icon-badge {
+    @apply grid shrink-0 place-items-center rounded-full bg-brand-50 text-brand-700 shadow-small ring-1 ring-brand-200;
+  }
+  .icon-badge-neutral {
+    @apply bg-white text-ink ring-ink-200;
+  }
+  .icon-badge-dark {
+    @apply bg-brand-500/20 text-brand-300 shadow-none ring-brand-400/40;
+  }
+
+  /* Pill chip, as used for categories, budgets and filters */
+  .chip {
+    @apply inline-flex h-10 items-center gap-2 rounded-full border border-ink-200 bg-white px-4 text-[13px] font-semibold whitespace-nowrap text-ink-800 hover:border-ink-300 hover:bg-ink-50;
+    transition: transform 0.35s var(--ease-spring), background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  }
+  .chip:active {
+    transform: scale(0.95);
+  }
+  .chip-active {
+    @apply border-ink-900 bg-ink-900 text-white hover:border-ink-900 hover:bg-ink-900;
+  }
+
+  .prose-copy p + p {
+    @apply mt-4;
+  }
+
+  /* The rupee sign is not in the web font's Latin subset. Drawing it with a system font
+     avoids downloading an extra font file (and a second layout pass) for one character. */
+  .rupee {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif;
+    font-weight: inherit;
+  }
+
+  /* Five stars drawn from one small SVG mask, so ratings need no icon font. */
+  .stars {
+    position: relative;
+    display: inline-block;
+    width: 5em;
+    height: 1em;
+    background: currentColor;
+    -webkit-mask: var(--star) 0 0 / 1em 1em repeat-x;
+    mask: var(--star) 0 0 / 1em 1em repeat-x;
+    --star: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='m12 3.2 2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.8l-5.4 2.9 1.2-6L3.300 9.500l6.100-.700z'/%3E%3C/svg%3E");
+  }
+  .stars > span {
+    position: absolute;
+    inset: 0 auto 0 0;
+    background: var(--color-star);
+  }
+}
+
+/* =========================================================================
+   SWIPER
+   ========================================================================= */
+.swiper {
+  --swiper-theme-color: var(--color-brand-600);
+  --swiper-pagination-bottom: 0px;
+}
+
+/* Hero pagination sits under the banner: a 24px tap target around each small dot. */
+.hero-swiper {
+  padding-bottom: 2.25rem;
+}
+.hero-swiper .swiper-pagination-bullet {
+  position: relative;
+  width: 24px;
+  height: 24px;
+  margin: 0 !important;
+  background: transparent;
+  opacity: 1;
+}
+.hero-swiper .swiper-pagination-bullet::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-ink-300);
+  transform: translate(-50%, -50%);
+  transition: width 0.4s var(--ease-fluid), background-color 0.25s ease;
+}
+.hero-swiper .swiper-pagination-bullet-active::after {
+  width: 20px;
+  background: var(--color-brand-600);
+}
+
+/* One-slide-at-a-time sliders (hero, product gallery): until Swiper attaches, only the first
+   slide is rendered, so the images of the hidden slides do not compete with the first paint. */
+.swiper-single:not(.swiper-initialized) .swiper-slide:not(:first-child) {
+  content-visibility: hidden;
+}
+
+/* Before Swiper attaches, sliders can still be swiped natively. */
+.swiper:not(.swiper-initialized) {
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+.swiper:not(.swiper-initialized)::-webkit-scrollbar {
+  display: none;
+}
+
+/* Product pages have a buy bar above the phone tab bar: give the footer room to clear both. */
+@media (width < 64rem) {
+  body:has([data-buybar]) footer {
+    padding-bottom: 132px;
+  }
+}
+
+/* =========================================================================
+   LENIS smooth scroll
+   ========================================================================= */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis:not(.lenis-autoToggle).lenis-stopped {
+  overflow: clip;
+}
+.lenis [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+/* =========================================================================
+   MOTION PREFERENCES
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

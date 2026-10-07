@@ -1,69 +1,71 @@
-import Image from "next/image";
+import { getCatalogueSummary, getCategories, getCategory, getPriceRanges, getProducts } from '@/lib/api/catalog';
+import { faqs, orderSteps, services } from '@/data/content';
+import { faqSchema, howToOrderSchema, serviceListSchema } from '@/lib/schema';
+import JsonLd from '@/components/ui/JsonLd';
+import Hero from '@/components/home/Hero';
+import Intro from '@/components/home/Intro';
+import CategoryCarousel from '@/components/home/CategoryCarousel';
+import ProductRail from '@/components/home/ProductRail';
+import Services from '@/components/home/Services';
+import Marquee from '@/components/home/Marquee';
+import WeddingGarlands from '@/components/home/WeddingGarlands';
+import CustomOrder from '@/components/home/CustomOrder';
+import ShopByPrice from '@/components/home/ShopByPrice';
+import PremiumSection from '@/components/home/PremiumSection';
+import HowItWorks from '@/components/home/HowItWorks';
+import Faq from '@/components/home/Faq';
 
-export default function Home() {
+const categoryTile = (category) => ({
+  href: `/category/${category.slug}`,
+  name: category.name,
+  image: category.image,
+  count: category.productCount,
+});
+
+// While only one category is live, its styles (subcategories) take the category row's place,
+// each shown with the photo of its first design.
+async function styleTiles(category) {
+  const tiles = await Promise.all(
+    category.subcategories.map(async (sub) => {
+      const designs = await getProducts({ category: category.slug, subcategory: sub.slug });
+      return designs.length
+        ? { href: `/category/${category.slug}/${sub.slug}`, name: sub.name, image: designs[0].image, count: designs.length }
+        : null;
+    }),
+  );
+  return tiles.filter(Boolean);
+}
+
+export default async function HomePage() {
+  const [categories, bestSellers, weddingCategory, weddingGarlands, premium, priceRanges, summary] = await Promise.all([
+    getCategories(),
+    getProducts({ tag: 'bestseller', limit: 8 }),
+    getCategory('wedding-garland'),
+    getProducts({ category: 'wedding-garland', limit: 8 }),
+    getProducts({ tag: 'premium', limit: 8 }),
+    getPriceRanges(),
+    getCatalogueSummary(),
+  ]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.js
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      <Hero />
+      <Intro />
+      {categories.length > 1 ? (
+        <CategoryCarousel title="Shop by category" tiles={categories.map(categoryTile)} />
+      ) : (
+        <CategoryCarousel title="Shop by style" tiles={await styleTiles(categories[0])} />
+      )}
+      <ProductRail title="Best sellers" description="The designs our customers order most" href="/best-sellers" products={bestSellers} />
+      <Services />
+      <Marquee />
+      <WeddingGarlands category={weddingCategory} products={weddingGarlands} />
+      <CustomOrder />
+      <ShopByPrice ranges={priceRanges} />
+      <PremiumSection products={premium} />
+      <HowItWorks summary={summary} />
+      <Faq />
+      <JsonLd data={[faqSchema(faqs.slice(0, 6)), serviceListSchema(services), howToOrderSchema(orderSteps)]} />
+    </>
   );
 }
